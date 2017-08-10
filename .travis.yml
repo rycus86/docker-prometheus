@@ -9,7 +9,7 @@ script:
 # setup QEMU
 - docker run --rm --privileged multiarch/qemu-user-static:register --reset
 # build
-- docker build -t prometheus:$DOCKER_TAG -f Dockerfile --build-arg arch=$DOCKER_ARCH /
+- docker build -t prometheus:$DOCKER_TAG -f Dockerfile --build-arg arch=$DOCKER_ARCH .
 # test
 - docker run --rm -it prometheus:$DOCKER_TAG --version | grep -E -A 10 "version $PROMETHEUS_VERSION"
 # push image
