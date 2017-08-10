@@ -1,0 +1,24 @@
+sudo: required
+
+services:
+- docker
+
+script:
+# set up the base image
+- sed -i "s#^FROM .*#FROM ${DOCKER_FROM}#" Dockerfile
+# setup QEMU
+- docker run --rm --privileged multiarch/qemu-user-static:register --reset
+# build
+- docker build -t prometheus:$DOCKER_TAG -f Dockerfile --build-arg arch=$DOCKER_ARCH
+# test
+- docker run --rm -it prometheus:$DOCKER_TAG --version | grep -E -A 10 "version [0-9.]+"
+# push image
+- >
+  docker login -u="rycus86" -p="$DOCKER_PASSWORD"
+  docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$DOCKER_TAG
+  docker push rycus86/prometheus:$DOCKER_TAG
+
+env:
+  matrix:
+  - DOCKER_TAG=armhf    DOCKER_ARCH=armv7  DOCKER_FROM=rycus86/armhf-alpine-qemu
+  - DOCKER_TAG=aarch64  DOCKER_ARCH=arm64  DOCKER_FROM=rycus86/arm64v8-alpine-qemu
