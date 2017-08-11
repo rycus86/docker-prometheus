@@ -14,11 +14,12 @@ script:
 after_success:
 # push image
 - >
-  docker login -u="rycus86" -p="$DOCKER_PASSWORD" && \
   if [ "$TRAVIS_BRANCH" == "master" ]; then
+      docker login -u="rycus86" -p="$DOCKER_PASSWORD" && \
       docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$DOCKER_TAG && \
       docker push rycus86/prometheus:$DOCKER_TAG
   elif [ "$TRAVIS_BRANCH" == "$PROMETHEUS_VERSION" ]; then
+      docker login -u="rycus86" -p="$DOCKER_PASSWORD" && \
       docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$PROMETHEUS_VERSION-$DOCKER_TAG && \
       docker push rycus86/prometheus:$PROMETHEUS_VERSION-$DOCKER_TAG
   fi
