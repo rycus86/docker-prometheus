@@ -14,7 +14,6 @@ jobs:
   include:
     - &deploy-stage
       stage: build and deploy
-      if: branch = master
       script:
         # set up the base image
         - sed -i "s#^FROM .*#FROM ${DOCKER_FROM}#" Dockerfile
@@ -50,7 +49,6 @@ jobs:
         - DOCKER_FROM=rycus86/arm64v8-alpine-qemu
 
     - stage: manifest
-      if: branch = master
       script:
         - |
           if [ "$TRAVIS_BRANCH" == "$PROMETHEUS_VERSION" ]; then
