@@ -3,30 +3,65 @@ sudo: required
 services:
 - docker
 
-script:
-# set up the base image
-- sed -i "s#^FROM .*#FROM ${DOCKER_FROM}#" Dockerfile
-# setup QEMU
-- docker run --rm --privileged multiarch/qemu-user-static:register --reset
-# build
-- docker build -t prometheus:$DOCKER_TAG -f Dockerfile --build-arg ARCH=$DOCKER_ARCH --build-arg VERSION=$PROMETHEUS_VERSION .
+addons:
+  apt:
+    packages:
+      - docker-ce
 
-after_success:
-# push image
-- >
-  if [ "$TRAVIS_BRANCH" == "master" ]; then
-      docker login -u="rycus86" -p="$DOCKER_PASSWORD" && \
-      docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$DOCKER_TAG && \
-      docker push rycus86/prometheus:$DOCKER_TAG
-  elif [ "$TRAVIS_BRANCH" == "$PROMETHEUS_VERSION" ]; then
-      docker login -u="rycus86" -p="$DOCKER_PASSWORD" && \
-      docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$PROMETHEUS_VERSION-$DOCKER_TAG && \
-      docker push rycus86/prometheus:$PROMETHEUS_VERSION-$DOCKER_TAG
-  fi
+install: skip
+
+jobs:
+  include:
+    - &deploy-stage
+      stage: build and deploy
+      if: branch = master
+      script:
+        # set up the base image
+        - sed -i "s#^FROM .*#FROM ${DOCKER_FROM}#" Dockerfile
+        # setup QEMU
+        - docker run --rm --privileged multiarch/qemu-user-static:register --reset
+        # build
+        - docker build -t prometheus:$DOCKER_TAG -f Dockerfile --build-arg ARCH=$DOCKER_ARCH --build-arg VERSION=$PROMETHEUS_VERSION .
+      after_success:
+        - |
+          docker login -u="rycus86" -p="$DOCKER_PASSWORD"
+          if [ "$TRAVIS_BRANCH" == "master" ]; then
+              docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$DOCKER_TAG && \
+              docker push rycus86/prometheus:$DOCKER_TAG
+          elif [ "$TRAVIS_BRANCH" == "$PROMETHEUS_VERSION" ]; then
+              docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$PROMETHEUS_VERSION-$DOCKER_TAG && \
+              docker push rycus86/prometheus:$PROMETHEUS_VERSION-$DOCKER_TAG
+          fi
+      env:
+        - DOCKER_TAG=amd64
+        - DOCKER_ARCH=amd64
+        - DOCKER_FROM=alpine:latest
+
+    - <<: *deploy-stage
+      env:
+        - DOCKER_TAG=armhf
+        - DOCKER_ARCH=armv7
+        - DOCKER_FROM=rycus86/armhf-alpine-qemu
+
+    - <<: *deploy-stage
+      env:
+        - DOCKER_TAG=aarch64
+        - DOCKER_ARCH=arm64
+        - DOCKER_FROM=rycus86/arm64v8-alpine-qemu
+
+    - stage: manifest
+      if: branch = master
+      script:
+        - |
+          if [ "$TRAVIS_BRANCH" == "$PROMETHEUS_VERSION" ]; then
+              sed -i "s#rycus86/prometheus:#rycus86/prometheus:${PROMETHEUS_VERSION}-#" Dockerfile
+              sed -i "s#rycus86/prometheus:${PROMETHEUS_VERSION}-latest#rycus86/prometheus:${PROMETHEUS_VERSION}#" Dockerfile
+          fi
+        - docker login -u="rycus86" -p="${DOCKER_PASSWORD}"
+        - curl -fsSL https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64 > ./manifest-tool
+        - chmod +x ./manifest-tool
+        - ./manifest-tool push from-spec manifest.yml
 
 env:
   global:
-  - PROMETHEUS_VERSION=1.7.1
-  matrix:
-  - DOCKER_TAG=armhf    DOCKER_ARCH=armv7  DOCKER_FROM=rycus86/armhf-alpine-qemu
-  - DOCKER_TAG=aarch64  DOCKER_ARCH=arm64  DOCKER_FROM=rycus86/arm64v8-alpine-qemu
+  - PROMETHEUS_VERSION=1.8.2
