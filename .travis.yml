@@ -52,8 +52,8 @@ jobs:
       script:
         - |
           if [ "$TRAVIS_BRANCH" == "$PROMETHEUS_VERSION" ]; then
-              sed -i "s#rycus86/prometheus:#rycus86/prometheus:${PROMETHEUS_VERSION}-#" Dockerfile
-              sed -i "s#rycus86/prometheus:${PROMETHEUS_VERSION}-latest#rycus86/prometheus:${PROMETHEUS_VERSION}#" Dockerfile
+              sed -i "s#rycus86/prometheus:#rycus86/prometheus:${PROMETHEUS_VERSION}-#" manifest.yml
+              sed -i "s#rycus86/prometheus:${PROMETHEUS_VERSION}-latest#rycus86/prometheus:${PROMETHEUS_VERSION}#" manifest.yml
           fi
         - docker login -u="rycus86" -p="${DOCKER_PASSWORD}"
         - curl -fsSL https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64 > ./manifest-tool
