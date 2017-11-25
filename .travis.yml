@@ -21,6 +21,8 @@ jobs:
         - docker run --rm --privileged multiarch/qemu-user-static:register --reset
         # build
         - docker build -t prometheus:$DOCKER_TAG -f Dockerfile --build-arg ARCH=$DOCKER_ARCH --build-arg VERSION=$PROMETHEUS_VERSION .
+        # test
+        - docker run --rm prometheus:$DOCKER_TAG --version
       after_success:
         - |
           docker login -u="rycus86" -p="$DOCKER_PASSWORD"
@@ -62,4 +64,4 @@ jobs:
 
 env:
   global:
-  - PROMETHEUS_VERSION=1.8.2
+  - PROMETHEUS_VERSION=2.0.0

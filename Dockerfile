@@ -3,7 +3,7 @@ FROM alpine:latest
 LABEL maintainer "Viktor Adam <rycus86@gmail.com>"
 
 ARG ARCH=amd64
-ARG VERSION=1.8.2
+ARG VERSION=2.0.0
 
 RUN apk --no-cache add --virtual build-dependencies wget ca-certificates \
     && mkdir -p /tmp/install /tmp/dist \
@@ -22,7 +22,7 @@ EXPOSE     9090
 VOLUME     [ "/prometheus" ]
 WORKDIR    /prometheus
 ENTRYPOINT [ "/bin/prometheus" ]
-CMD        [ "-config.file=/etc/prometheus/prometheus.yml", \
-             "-storage.local.path=/prometheus", \
-             "-web.console.libraries=/usr/share/prometheus/console_libraries", \
-             "-web.console.templates=/usr/share/prometheus/consoles" ]
+CMD        [ "--config.file=/etc/prometheus/prometheus.yml", \
+             "--storage.tsdb.path=/prometheus", \
+             "--web.console.libraries=/usr/share/prometheus/console_libraries", \
+             "--web.console.templates=/usr/share/prometheus/consoles" ]
