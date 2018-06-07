@@ -25,7 +25,7 @@ jobs:
         - docker run --rm prometheus:$DOCKER_TAG --version
       after_success:
         - |
-          docker login -u="rycus86" -p="$DOCKER_PASSWORD"
+          echo ${DOCKER_PASSWORD} | docker login --username "rycus86" --password-stdin
           if [ "$TRAVIS_BRANCH" == "master" ]; then
               docker tag prometheus:$DOCKER_TAG rycus86/prometheus:$DOCKER_TAG
               docker push rycus86/prometheus:$DOCKER_TAG
@@ -57,7 +57,7 @@ jobs:
               sed -i "s#rycus86/prometheus:#rycus86/prometheus:${PROMETHEUS_VERSION}-#" manifest.yml
               sed -i "s#rycus86/prometheus:${PROMETHEUS_VERSION}-latest#rycus86/prometheus:${PROMETHEUS_VERSION}#" manifest.yml
           fi
-        - docker login -u="rycus86" -p="${DOCKER_PASSWORD}"
+        - echo ${DOCKER_PASSWORD} | docker login --username "rycus86" --password-stdin
         - curl -fsSL https://github.com/estesp/manifest-tool/releases/download/v0.7.0/manifest-tool-linux-amd64 > ./manifest-tool
         - chmod +x ./manifest-tool
         - ./manifest-tool push from-spec manifest.yml
