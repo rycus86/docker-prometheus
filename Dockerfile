@@ -5,7 +5,8 @@ LABEL maintainer "Viktor Adam <rycus86@gmail.com>"
 ARG ARCH=amd64
 ARG VERSION=2.3.2
 
-RUN apk --no-cache add --virtual build-dependencies wget ca-certificates \
+RUN apk --no-cache add --virtual build-dependencies wget \
+    && apk --no-cache add ca-certificates \
     && mkdir -p /tmp/install /tmp/dist \
     && wget -O /tmp/install/prometheus.tar.gz https://github.com/prometheus/prometheus/releases/download/v$VERSION/prometheus-$VERSION.linux-$ARCH.tar.gz \
     && apk del build-dependencies \
