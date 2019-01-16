@@ -3,7 +3,7 @@ FROM alpine:latest
 LABEL maintainer "Viktor Adam <rycus86@gmail.com>"
 
 ARG ARCH=amd64
-ARG VERSION=2.6.0
+ARG VERSION=2.6.1
 
 RUN apk --no-cache add --virtual build-dependencies wget \
     && apk --no-cache add ca-certificates \
